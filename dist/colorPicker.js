@@ -458,10 +458,8 @@
         initEvent.stopPropagation();
         initEvent.preventDefault();
 
-        const moveSlider = (event) => {
-            event.stopPropagation();
-            event.preventDefault();
-
+        //Function for updating the values
+        const updateOnEvent = (event) => {
             //Get bounds and calculate new value
             const target = elemental.colorPickerConfig.sliderTarget[id];
             if (!target) return;
@@ -498,6 +496,15 @@
             }
         }
 
+        //Actually updating the values
+        updateOnEvent(initEvent);
+        const moveSlider = (event) => {
+            event.stopPropagation();
+            event.preventDefault();
+
+            updateOnEvent(event);
+        }
+
         const dropSlider = (event) => {
             document.removeEventListener("mousemove", moveSlider);
             document.removeEventListener("mouseup", dropSlider);
@@ -510,12 +517,12 @@
     };
 
     //Set sliders to use their attributes
-    firstSlider.onmousedown = (event) => sliderFunctionality(event, firstAdjust, "primary");
-    secondSlider.onmousedown = (event) => sliderFunctionality(event, secondAdjust, "secondary");
-    thirdSlider.onmousedown = (event) => sliderFunctionality(event, thirdAdjust, "tertiary");
-    alphaSlider.onmousedown = (event) => sliderFunctionality(event, alphaAdjust, "alpha");
+    firstAdjust.onmousedown = (event) => sliderFunctionality(event, firstAdjust, "primary");
+    secondAdjust.onmousedown = (event) => sliderFunctionality(event, secondAdjust, "secondary");
+    thirdAdjust.onmousedown = (event) => sliderFunctionality(event, thirdAdjust, "tertiary");
+    alphaAdjust.onmousedown = (event) => sliderFunctionality(event, alphaAdjust, "alpha");
     hueAdjust.onmousedown = (event) => sliderFunctionality(event, hueAdjust, "hue");
-    satValueAdjust.onmousedown = (event) => sliderFunctionality(event, colorPickerSatBrightPicker, "satValue");
+    colorPickerSatBrightPicker.onmousedown = (event) => sliderFunctionality(event, colorPickerSatBrightPicker, "satValue");
 
     //Now for clicking off the actual prompt.
     const clickOff = (event) => {
