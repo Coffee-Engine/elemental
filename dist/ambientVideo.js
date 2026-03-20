@@ -113,6 +113,7 @@
                 height: var(--height);
 
                 filter: blur(3vmin);
+                mix-blend-mode: lighten;
                 z-index: -100;
             }
 
