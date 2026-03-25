@@ -321,19 +321,61 @@
         },
 
         gradient: class {
-            colors = [
-                [ new elemental.colorLib.color("#ff00ff"), "0%" ],
-                [ new elemental.colorLib.color("#000000"), "100%" ]
-            ];
-            angle = 0;
-            mode = "linear";
+            modeToCSSFunction = {
+                "linear": () => `linear-gradient(${this.angle}rad`,
+                "radial": () => `radial-gradient(at center`,
+                "conic": () => `conic-gradient(from ${this.angle}rad`,
+            }
+
+            get css() {
+                let gradient = this.modeToCSSFunction[this.mode]();
+                for (let id in this.colors) {
+                    gradient += `, ${this.colors[id][0].hex} ${this.colors[id][1] * 100}%`;
+                }
+
+                gradient += ")";
+
+                return gradient;
+            }
 
             unpackString(string) {
                 console.log(string);
             }
+
+            constructor(contents, mode, angle) {
+                //Default to pink and black if no content array is provided
+                if (Array.isArray(contents)) {
+                    const step = 1 / contents.length;
+                    this.colors = [];
+                    
+                    let cur = 0;
+                    for (let colorID in contents) {
+                        const color = contents[colorID];
+                        if (Array.isArray(color) && color.length >= 2) {
+                            this.colors.push([color[0], color[1]]);
+                        }
+                        else if (typeof color == "string") {
+                            cur += step;
+                            this.colors.push([color, cur]);
+                        }
+                        else {
+                            cur += step;
+                            this.colors.push(["#ff00ff", cur]);
+                        }
+                    }
+                }
+                else this.colors = [
+                    [ new elemental.colorLib.color("#ff00ff"), 0 ],
+                    [ new elemental.colorLib.color("#000000"), 1 ]
+                ];
+
+                this.mode = mode || "linear";
+                this.angle = angle || 0;
+            }
         }
     };
 
+    //Set up configuration and the base module.
     elemental.colorPickerConfig = {
         sliderDirection: {
             primary: "x",
@@ -446,27 +488,29 @@
         }
 
         updateColor(target, value, parent) {
+            let color = parent.color;
+            if (color instanceof elemental.colorLib.gradient) color = color.colors[parent.gradientIndex][0];
             //Set variables needed for each value.
-            this.firstSlider.style.setProperty("--x", `${parent.color.r / 2.55}%`);
-            this.secondSlider.style.setProperty("--x", `${parent.color.g / 2.55}%`);
-            this.thirdSlider.style.setProperty("--x", `${parent.color.b / 2.55}%`);
-            if (this.alphaAdjust) this.alphaSlider.style.setProperty("--x", `${parent.color.a / 2.55}%`);
-            this.hueSlider.style.setProperty("--x", `${parent.color.h / 3.6}%`);
+            this.firstSlider.style.setProperty("--x", `${color.r / 2.55}%`);
+            this.secondSlider.style.setProperty("--x", `${color.g / 2.55}%`);
+            this.thirdSlider.style.setProperty("--x", `${color.b / 2.55}%`);
+            if (this.alphaAdjust) this.alphaSlider.style.setProperty("--x", `${color.a / 2.55}%`);
+            this.hueSlider.style.setProperty("--x", `${color.h / 3.6}%`);
 
-            this.firstAdjust.style.setProperty("--combinedLow", elemental.colorLib.RGBToHex({ r: 0, g: parent.color.g, b: parent.color.b }));
-            this.firstAdjust.style.setProperty("--color", elemental.colorLib.RGBToHex({ r: 255, g: parent.color.g, b: parent.color.b }));
+            this.firstAdjust.style.setProperty("--combinedLow", elemental.colorLib.RGBToHex({ r: 0, g: color.g, b: color.b }));
+            this.firstAdjust.style.setProperty("--color", elemental.colorLib.RGBToHex({ r: 255, g: color.g, b: color.b }));
 
-            this.secondAdjust.style.setProperty("--combinedLow", elemental.colorLib.RGBToHex({ g: 0, r: parent.color.r, b: parent.color.b }));
-            this.secondAdjust.style.setProperty("--color", elemental.colorLib.RGBToHex({ g: 255, r: parent.color.r, b: parent.color.b }));
+            this.secondAdjust.style.setProperty("--combinedLow", elemental.colorLib.RGBToHex({ g: 0, r: color.r, b: color.b }));
+            this.secondAdjust.style.setProperty("--color", elemental.colorLib.RGBToHex({ g: 255, r: color.r, b: color.b }));
 
-            this.thirdAdjust.style.setProperty("--combinedLow", elemental.colorLib.RGBToHex({ b: 0, r: parent.color.r, g: parent.color.g }));
-            this.thirdAdjust.style.setProperty("--color", elemental.colorLib.RGBToHex({ b: 255, r: parent.color.r, g: parent.color.g }));
+            this.thirdAdjust.style.setProperty("--combinedLow", elemental.colorLib.RGBToHex({ b: 0, r: color.r, g: color.g }));
+            this.thirdAdjust.style.setProperty("--color", elemental.colorLib.RGBToHex({ b: 255, r: color.r, g: color.g }));
 
             //Then the color properties
-            const alphalessHex = elemental.colorLib.RGBToHex({ r: parent.color.r, g: parent.color.g, b: parent.color.b });
+            const alphalessHex = elemental.colorLib.RGBToHex({ r: color.r, g: color.g, b: color.b });
             if (this.alphaAdjust) {
                 this.alphaAdjust.style.setProperty("--color", alphalessHex);
-                this.alphaSlider.style.setProperty("--color", parent.color.hex);
+                this.alphaSlider.style.setProperty("--color", color.hex);
             }
 
             this.firstSlider.style.setProperty("--color", alphalessHex);
@@ -476,14 +520,14 @@
             this.hueSlider.style.setProperty("--color", alphalessHex);
 
             //Set the color on the big square
-            this.satValueAdjust.style.setProperty("--color", elemental.colorLib.HSVToHex({ h: parent.color.h, s: 1, v: 1 }));
+            this.satValueAdjust.style.setProperty("--color", elemental.colorLib.HSVToHex({ h: color.h, s: 1, v: 1 }));
 
             //Move the dragger on the big square
-            this.satValueSlider.style.setProperty("--x", `${parent.color.s * 100}%`);
-            this.satValueSlider.style.setProperty("--y", `${(1 - parent.color.v) * 100}%`);
+            this.satValueSlider.style.setProperty("--x", `${color.s * 100}%`);
+            this.satValueSlider.style.setProperty("--y", `${(1 - color.v) * 100}%`);
 
             //Then the needed for the hue adjuster.
-            const { s, l } = parent.color.HSL;
+            const { s, l } = color.HSL;
             this.hueAdjust.style.setProperty("--saturation", `${s * 100}%`);
             this.hueAdjust.style.setProperty("--lightness", `${l * 100}%`);
         }
@@ -491,36 +535,99 @@
 
     //Then gradient tools
     elemental.colorPickerGradient = class extends elemental.colorPickerModule {
+        //Javascript gets a hissy fit if this is private for some reason.
+        set mode(value) {
+            const lastMode = this._mode;
+            this._mode = value;
+            this.updateMode(value, lastMode);
+        }
+
+        get mode() {
+            return this._mode;
+        }
+
         build(parent, container) {
+            //Just make sure gradient index is there.
+            parent.gradientIndex = parent.gradientIndex || 0;
+
+            if (parent.color instanceof elemental.colorLib.color) this._mode = "none";
+            else this._mode = parent.color.mode;
+
             this.gradientContainer = document.createElement("div");
             this.gradientContainer.className = `${parent.prefix}gradient-container`;
 
             this.modeContainer = document.createElement("div");
             this.modeContainer.className = `${parent.prefix}gradient-modes`;
 
-            this.noGradient = document.createElement("button");
-            this.noGradient.className = `${parent.prefix}gradient-mode`;
+            //Create mode buttons
+            this.modes = {
+                none: document.createElement("button"),
+                linear: document.createElement("button"),
+                radial: document.createElement("button"),
+                conic: document.createElement("button"),
+            };
 
-            this.linearGradient = document.createElement("button");
-            this.linearGradient.className = `${parent.prefix}gradient-mode ${parent.prefix}gradient-mode-linear`;
+            this.modes.none.onclick = () => this.mode = "none";
+            this.modes.linear.onclick = () => this.mode = "linear";
+            this.modes.radial.onclick = () => this.mode = "radial";
+            this.modes.conic.onclick = () => this.mode = "conic";
 
-            this.radialGradient = document.createElement("button");
-            this.radialGradient.className = `${parent.prefix}gradient-mode ${parent.prefix}gradient-mode-radial`;
-
-            this.conicGradient = document.createElement("button");
-            this.conicGradient.className = `${parent.prefix}gradient-mode ${parent.prefix}gradient-mode-conic`;
-
+            //Create the display gradient but keep it hidden because it will only appear when a gradient mode is selected.
             this.displayGradient = document.createElement("div");
             this.displayGradient.className = `${parent.prefix}gradient-display`;
 
-            this.modeContainer.appendChild(this.noGradient);
-            this.modeContainer.appendChild(this.linearGradient);
-            this.modeContainer.appendChild(this.radialGradient);
-            this.modeContainer.appendChild(this.conicGradient);
+            //Append the html elements and update the selected mode.
+            this.modeContainer.appendChild(this.modes.none);
+            this.modeContainer.appendChild(this.modes.linear);
+            this.modeContainer.appendChild(this.modes.radial);
+            this.modeContainer.appendChild(this.modes.conic);
 
             this.gradientContainer.appendChild(this.modeContainer);
-            this.gradientContainer.appendChild(this.displayGradient);
             container.appendChild(this.gradientContainer);
+
+            this.updateMode(this.mode, this.mode);
+
+        }
+
+        updateMode(current, last) {
+            //Update buttons to reflect current selection.
+            for (let buttonMode in this.modes) {
+                this.modes[buttonMode].className = `${this.parent.prefix}gradient-mode ${this.parent.prefix}gradient-mode-${buttonMode}`;
+
+                if (this.mode == buttonMode) this.modes[buttonMode].className += ` ${this.parent.prefix}gradient-mode-selected`;
+            }
+
+            //Convert the color if need be;
+            if (this.mode != "none") { 
+                if (!this.displayGradient.parentElement) this.gradientContainer.appendChild(this.displayGradient);
+            }
+            else if (this.displayGradient.parentElement) this.displayGradient.parentElement.removeChild(this.displayGradient);
+
+            //Now we convert the color if need be;
+            if (current != last) {
+                //Make sure we are switching from none, and are not a gradient, if so convert to gradient
+                if (last == "none" && this.parent.color instanceof elemental.colorLib.color) {
+                    //Convert to gradient
+                    const grad = new elemental.colorLib.gradient([
+                        [this.parent.color, 0],
+                        [new elemental.colorLib.color((this.parent.hasAttribute("alpha")) ? "#00000000" : "#000000"), 1],
+                    ], current);
+
+                    this.parent.color = grad;
+                }
+                //Otherwise, check for us being a gradient, and us once being one
+                else if (last != "none" && this.parent.color instanceof elemental.colorLib.gradient) {
+                    //If we are no longer one, grab the first color from the gradient
+                    if (current == "none") {
+                        const color = this.parent.color.colors[0][0];
+                        this.parent.color = color;
+                    }
+                    //Otherwise just switch gradient type.
+                    else this.parent.color.mode = current;
+                }
+
+                this.parent.updateColor(null, 0);
+            }
         }
 
         condition(parent) { return parent.hasAttribute("gradient"); }
@@ -528,19 +635,19 @@
 
     //Modules we have by default if the colour picker element doesn't specify any. Right now a take all situation.
     elemental.colorPickerConfig.modules = [
+        elemental.colorPickerGradient,
         elemental.colorPickerGeneric
     ]
 
     //Define a custom color picker
     elemental.newElement("Color Picker", {
         class: class extends HTMLElement {
-            static observedAttributes = ["value", "gradient", "alpha"];
+            // "isgradient" is moreso for css
+            static observedAttributes = ["value", "gradient", "alpha", "isgradient"];
             prefix = "elemental-color-picker-";
 
             set value(value) {
                 this.setAttribute("value", value);
-                if (this.color instanceof elemental.colorLib.color) this.color.hex = value;
-                else if (this.color instanceof elemental.colorLib.gradient) this.color.unpackString(value);
             }
             get value() {
                 if (this.hasAttribute("value")) return this.getAttribute("value");
@@ -558,9 +665,6 @@
                     const clientRect = this.getBoundingClientRect();
                     this.createPopup(clientRect.left, clientRect.top);
                 }
-
-                this.color = new elemental.colorLib.color();
-                this.color.hex = this.value || "#000000";
 
                 //Now setup our listener functions for when we are popped up.
                 const self = this;
@@ -640,11 +744,18 @@
                 this.container.style.setProperty("--x", `${x}px`);
                 this.container.style.setProperty("--y", `${y}px`);
 
+                if (!this.color) this.color = new elemental.colorLib.color();
+
                 //Then spawn the needed modules
-                modules = modules || elemental.colorPickerConfig.modules;
+                const modules = elemental.colorPickerConfig.modules;
                 for (let moduleID in modules) {
-                    const module = new modules[moduleID](this);
-                    this.spawnedModules.push(module);
+                    //Make sure module is valid, and it's condition is met.
+                    if (!modules[moduleID]) continue;
+
+                    if (modules[moduleID].prototype.condition(this)) {
+                        const module = new modules[moduleID](this);
+                        this.spawnedModules.push(module);
+                    }
                 }
  
                 //Then add the container to the DOM
@@ -652,15 +763,19 @@
             }
 
             updateColor(target, value) {
+                let color = this.color;
+                if (color instanceof elemental.colorLib.gradient) color = color.colors[this.gradientIndex][0];
+
                 switch (target) {
-                    case "r": this.color.r = Math.floor(value * 255); break;
-                    case "g": this.color.g = Math.floor(value * 255); break;
-                    case "b": this.color.b = Math.floor(value * 255); break;
-                    case "h": this.color.h = Math.max(0, Math.min(value, 1)) * 360; break;
-                    case "s": this.color.s = value; break;
-                    case "v": this.color.v = value; break;
-                    case "a": this.color.a = Math.floor(value * 255); break;
-                    case "hex": this.color.hex = value; break;
+                    case "r": color.r = Math.floor(value * 255); break;
+                    case "g": color.g = Math.floor(value * 255); break;
+                    case "b": color.b = Math.floor(value * 255); break;
+                    case "h": color.h = Math.max(0, Math.min(value, 1)) * 360; break;
+                    case "s": color.s = value; break;
+                    case "v": color.v = value; break;
+                    case "a": color.a = Math.floor(value * 255); break;
+                    case "hex": color.hex = value; break;
+                    default: break;
                 }
 
                 for (let moduleID in this.spawnedModules) {
@@ -668,7 +783,15 @@
                     module.updateColor(target, value, this);
                 }
 
-                this.value = this.color.hex;
+                //Get css if gradient, get hex if color
+                if (this.color instanceof elemental.colorLib.color) {
+                    this.setAttribute("isgradient", false);
+                    this.value = this.color.hex;
+                }
+                else if (this.color instanceof elemental.colorLib.gradient) {
+                    this.setAttribute("isgradient", true);
+                    this.value = this.color.css;
+                }
             }
 
             clickHandler(event) {
@@ -687,6 +810,11 @@
                 this.updateColor(null, 0);
                 
                 window.addEventListener("mousedown",  this.#mouseDownFunc);
+            }
+
+            connectedCallback() {
+                if (!this.color) this.color = new elemental.colorLib.color();
+                this.color.hex = this.value || "#000000";
             }
 
             attributeChangedCallback(name, old, value) {
@@ -713,6 +841,10 @@
 
         <el>:hover { border-color: #afafaf; }
         <el>:active { border-style: inset; }
+
+        <el>[isgradient="true"] {
+            background: var(--color), linear-gradient(to bottom, #9f9f9f 50%, #cfcfcf 50%);
+        }
 
         .elemental-color-picker-container {
             --x: 0px;
