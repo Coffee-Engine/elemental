@@ -338,10 +338,6 @@
                 return gradient;
             }
 
-            unpackString(string) {
-                console.log(string);
-            }
-
             constructor(contents, mode, angle) {
                 //Default to pink and black if no content array is provided
                 if (Array.isArray(contents)) {
@@ -371,6 +367,30 @@
 
                 this.mode = mode || "linear";
                 this.angle = angle || 0;
+            }
+        },
+
+        unpackString(str) {
+            if (typeof str != "string") return;
+
+            if (str.startsWith("#")) return new elemental.colorLib.color(str);
+            else {
+                let func = "";
+                let i = 0;
+
+                //Grab function
+                while (str.charAt(i) != "(" && i < str.length) {
+                    func += str.charAt(i);
+                    i++;
+                }
+
+                //make sure we didn't just hit a dead end.
+                if (!(i < str.length)) return new elemental.colorLib.color("#ffffff");
+
+                //otherwise trim the function name
+                func = func.trim();
+
+                return new elemental.colorLib.color("#ffffff");
             }
         }
     };
@@ -656,14 +676,10 @@
                     if (!value) return;
 
                     //If so do our thing
-                    if (value.startsWith("#")) {
-                        this.color = new elemental.colorLib.color(value);
-                        this.setAttribute("isgradient", false);
-                    }
-                    else if (this.color instanceof elemental.colorLib.gradient) {
-                        this.color.unpackString(value);
-                        this.setAttribute("isgradient", true);
-                    }
+                    this.color = elemental.colorLib.unpackString(value);
+
+                    //update gradient attrib
+                    this.setAttribute("isgradient", this.color instanceof elemental.colorLib.gradient);
                 }
                 else {
                     this.setAttribute("value", value);
