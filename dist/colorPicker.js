@@ -348,24 +348,23 @@
                     for (let colorID in contents) {
                         const color = contents[colorID];
                         if (Array.isArray(color) && color.length >= 2) {
-                            this.colors.push([color[0], color[1]]);
+                            if (color[0] instanceof elemental.colorLib.color) this.colors.push([color[0], color[1]]);
+                            else this.colors.push([new elemental.colorLib.color(color[0]), color[1]])
                         }
                         else if (typeof color == "string") {
                             cur += step;
-                            this.colors.push([color, cur]);
+                            this.colors.push([new elemental.colorLib.color(color), cur]);
                         }
                         else {
                             cur += step;
-                            this.colors.push(["#ff00ff", cur]);
+                            this.colors.push([new elemental.colorLib.color("#ff00ff"), cur]);
                         }
                     }
                 }
                 else if (typeof contents == "string") this.parseCSS(contents);
                 else this.failSafeColors();
 
-                console.log(this.angle);
-
-                this.mode = mode || "linear";
+                this.mode = mode || this.mode || "linear";
                 this.angle = angle || this.angle || 0;
             }
 
