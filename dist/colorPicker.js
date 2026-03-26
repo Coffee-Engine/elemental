@@ -360,6 +360,8 @@
                             this.colors.push([new elemental.colorLib.color("#ff00ff"), cur]);
                         }
                     }
+
+                    this.organizeColors();
                 }
                 else if (typeof contents == "string") this.parseCSS(contents);
                 else this.failSafeColors();
@@ -376,6 +378,8 @@
                     [ new elemental.colorLib.color("#ff00ff"), 0 ],
                     [ new elemental.colorLib.color("#000000"), 1 ]
                 ];
+
+                this.organizeColors();
 
                 return this.colors;
             }
@@ -449,6 +453,10 @@
                 }
 
                 return colors;
+            }
+
+            organizeColors() {
+                this.colors.sort((a, b) => a[1] - b[1]);
             }
 
             //The actual parsing of each type;
@@ -539,6 +547,8 @@
                     if (!success) return this.failSafeColors();
                 }
                 else return this.failSafeColors();
+
+                this.organizeColors();
             }
         },
 
@@ -771,6 +781,12 @@
 
         updateColor(target, value, parent) {
             this.updateDisplayGradient();
+            
+            //Update selected color on gradient if need be.
+            if (parent.color instanceof elemental.colorLib.gradient) {
+                const gradIndex = this.parent.gradientIndex;
+                this.colorGrabbers[gradIndex].style.setProperty("--color", parent.color.colors[gradIndex].hex);
+            }
         }
 
         addSelectors() {
@@ -796,7 +812,6 @@
                     if (this.parent.gradientIndex == i) element.className += ` ${this.parent.prefix}gradient-point-selected`;
 
                     element.onclick = () => {
-                        console.log(this.parent.gradientIndex);
                         //Reset the class of the previously selected
                         this.colorGrabbers[this.parent.gradientIndex].className = `${this.parent.prefix}gradient-point`;
 
@@ -876,6 +891,11 @@
 
                 this.addSelectors();
                 this.parent.updateColor(null, 0);
+            }
+
+            //Clamp the gradient index to the colors available to the user.
+            if (this.parent.color instanceof elemental.colorLib.gradient) {
+                this.parent.gradientIndex = Math.ceil(Math.max(0, this.parent.gradientIndex), this.parent.color.colors.length)
             }
         }
 
@@ -1199,6 +1219,8 @@
                 hsla(324deg, var(--saturation), var(--lightness), 100%) 90%,
                 hsla(360deg, var(--saturation), var(--lightness), 100%) 100%
             );
+
+            overflow: hidden;
         }
 
         .elemental-color-picker-adjustHolder {
@@ -1313,7 +1335,7 @@
             /* Ha ha half life reference! */
             --gradient: linear-gradient(to right, #000000 50%, #ff00ff 50%);
 
-            background: var(--gradient), linear-gradient(to bottom, #00000033 0%, transparent 100%);
+            background: var(--gradient), linear-gradient(to top, #dfdfdf 50%, #afafaf 50%);
             border: 4px #dfdfdf outset;
 
             margin: 4px;
