@@ -360,21 +360,140 @@
                         }
                     }
                 }
-                else this.colors = [
+                else if (typeof contents == "string") this.parseCSS(contents);
+                else this.failSafeColors();
+
+                console.log(this.angle);
+
+                this.mode = mode || "linear";
+                this.angle = angle || this.angle || 0;
+            }
+
+            //JUST IN CASE
+            failSafeColors() {
+                this.mode = "linear";
+                this.angle = 0;
+                this.colors = [
                     [ new elemental.colorLib.color("#ff00ff"), 0 ],
                     [ new elemental.colorLib.color("#000000"), 1 ]
                 ];
 
-                this.mode = mode || "linear";
-                this.angle = angle || 0;
+                return this.colors;
             }
-        },
 
-        unpackString(str) {
-            if (typeof str != "string") return;
+            parseCSSAngle(angle) {
+                let parsed = 0;
+                //For rads it's a simple find and parse.
+                if (angle.endsWith("rad")) {
+                    parsed = Number(angle.replace("rad", "").trim());
+                    if (isNaN(parsed)) parsed = 0;
+                }
+                //For degrees we need to convert.
+                else if (angle.endsWith("deg")) {
+                    parsed = Number(angle.replace("deg", "").trim());
+                    if (isNaN(parsed)) parsed = 0;
+                    parsed *= 0.01745329;
+                }
+                //Who uses gradians?
+                else if (angle.endsWith("grad")) {
+                    parsed = Number(angle.replace("grad", "").trim());
+                    if (isNaN(parsed)) parsed = 0;
+                    parsed *= 0.01570796;
+                }
+                //and then turns
+                else if (angle.endsWith("turn")) {
+                    parsed = Number(angle.replace("turn", "").trim());
+                    if (isNaN(parsed)) parsed = 0;
+                    parsed *= Math.PI * 2;
+                }
 
-            if (str.startsWith("#")) return new elemental.colorLib.color(str);
-            else {
+                return parsed;
+            }
+
+            //Tested with 
+            parseColorsFromArgs(args, from) {
+                const colors = [];
+
+                //Get step just in case;
+                const step = 100 / (args.length - from);
+                let cur = 0;
+
+                for (let i=from; i<args.length; i++) {
+                    let arg=args[i];
+                    
+                    //How, but if so just default it to pink
+                    if (arg.length == 0) arg = ["#ff00ff", `${cur}%`];
+                    else if (arg.length == 1) {
+                        cur += step;
+                        arg = [arg[0], `${cur}%`];
+                    }
+
+                    //Make sure both sides are SOMEWHAT valid
+                    if (!arg[0].startsWith("#")) arg[0] = "#ff00ff";
+                    if (!arg[1].endsWith("%")) {
+                        cur += step;
+                        arg[1] = `${cur}%`;
+                    }
+
+                    //Final parse
+                    arg[0] = new elemental.colorLib.color(arg[0]);
+                    arg[1] = Number(arg[1].trim().replace("%", "")) / 100;
+                    
+                    //If it is somehow still not valid, make it
+                    if (isNaN(arg[1])) {
+                        cur += step;
+                        arg[1] = cur / 100;
+                    }
+                    else cur = arg[1];
+
+                    //Finally add it to the array;
+                    colors.push([arg[0], arg[1]]);
+                }
+
+                return colors;
+            }
+
+            //The actual parsing of each type;
+            cssReaders = {
+                "linear": (args) => {
+                    if (args.length < 3) return false;
+                    this.angle = this.parseCSSAngle(args[0][0]);
+
+                    const parsedColors = this.parseColorsFromArgs(args, 1);
+                    if (parsedColors.length < 2) return false;
+
+                    this.colors = parsedColors;
+
+                    return true;
+                },
+                "radial": (args) => {
+                    if (args.length < 3) return false;
+
+                    const parsedColors = this.parseColorsFromArgs(args, 1);
+                    if (parsedColors.length < 2) return false;
+
+                    this.colors = parsedColors;
+
+                    return true;
+                },
+                "conic": (args) => {
+                    if (args.length < 3) return false;
+
+                    //Parse the angle, because "From" can be here for some reason
+                    if (args[0].length == 0) this.angle = 0;
+                    else if (args[0].length == 1) this.angle = this.parseCSSAngle(args[0][0]);
+                    else if (args[0].length == 2) this.angle = this.parseCSSAngle(args[0][1]);
+
+                    const parsedColors = this.parseColorsFromArgs(args, 1);
+                    if (parsedColors.length < 2) return false;
+
+                    this.colors = parsedColors;
+
+                    return true;
+                }
+            }
+
+            parseCSS(str) {
                 let func = "";
                 let i = 0;
 
@@ -385,13 +504,57 @@
                 }
 
                 //make sure we didn't just hit a dead end.
-                if (!(i < str.length)) return new elemental.colorLib.color("#ffffff");
+                if (i >= str.length) return this.failSafeColors();
 
                 //otherwise trim the function name
-                func = func.trim();
+                func = elemental.colorLib.gradientFunc2Type[func.trim().toLowerCase()];
+                if (!func) func = "linear";
+                this.mode = func;
+                
+                //Step off and read args
+                i++;
 
-                return new elemental.colorLib.color("#ffffff");
+                let args = "";
+                while(str.charAt(i) != ")" && i < str.length) {
+                    args += str.charAt(i);
+                    i++;
+                }
+
+                if (i >= str.length || args.length == 0) return this.failSafeColors();
+
+                //Clean up the arguments
+                args = args.split(",");
+                for (let argsID in args) {
+                    //Trim and split each argument into it's components,
+                    //Also make sure to fancy them up aswell.
+                    args[argsID] = args[argsID].trim().split(" ").reduce(
+                        (acc, cur) => { 
+                            if (cur) acc.push(cur.trim()) 
+                            return acc;
+                        }, 
+                        []
+                    );
+                }
+
+                if (this.cssReaders[func]) {
+                    const success = this.cssReaders[func](args);
+                    if (!success) return this.failSafeColors();
+                }
+                else return this.failSafeColors();
             }
+        },
+
+        gradientFunc2Type: {
+            "linear-gradient":"linear",
+            "radial-gradient":"radial",
+            "conic-gradient": "conic",
+        },
+
+        unpackString(str) {
+            if (typeof str != "string") return;
+
+            if (str.startsWith("#")) return new elemental.colorLib.color(str);
+            else return new elemental.colorLib.gradient(str);
         }
     };
 
@@ -679,7 +842,17 @@
                     this.color = elemental.colorLib.unpackString(value);
 
                     //update gradient attrib
-                    this.setAttribute("isgradient", this.color instanceof elemental.colorLib.gradient);
+                    const isGradient = this.color instanceof elemental.colorLib.gradient;
+                    this.setAttribute("isgradient", isGradient);
+
+                    //Update the value;
+                    this.#fromUpdate = true;
+                    if (isGradient) this.setAttribute("value", this.color.css);
+                    else this.setAttribute("value", this.color.hex);
+                    this.#fromUpdate = false;
+    
+                    //Update the color
+                    this.style.setProperty("--color", this.getAttribute("value"));
                 }
                 else {
                     this.setAttribute("value", value);
