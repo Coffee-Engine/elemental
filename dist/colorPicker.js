@@ -792,6 +792,9 @@
             this.gradientContainer = document.createElement("div");
             this.gradientContainer.className = `${parent.prefix}gradient-container`;
 
+            this.buttonContainer = document.createElement("div");
+            this.buttonContainer.className = `${parent.prefix}gradient-buttons`;
+
             this.modeContainer = document.createElement("div");
             this.modeContainer.className = `${parent.prefix}gradient-modes`;
 
@@ -837,7 +840,8 @@
             this.modeContainer.appendChild(this.modes.radial);
             this.modeContainer.appendChild(this.modes.conic);
 
-            this.gradientContainer.appendChild(this.modeContainer);
+            this.buttonContainer.appendChild(this.modeContainer);
+            this.gradientContainer.appendChild(this.buttonContainer);
             container.appendChild(this.gradientContainer);
 
             this.updateMode(this.mode, this.mode);
@@ -1214,6 +1218,7 @@
             }
 
             createPopup(x, y) {
+                if (this.container && this.container.parentElement) this.destroyPopup();
                 this.buildPopup(x, y);
                 this.updateColor(null, 0);
                 
@@ -1402,6 +1407,11 @@
             display: grid;
             grid-template-rows: auto auto;
             margin: 4px;
+        }
+
+        .elemental-color-picker-gradient-buttons {
+            display: grid;
+            grid-template-columns: 1fr auto;
         }
 
         .elemental-color-picker-gradient-modes {
