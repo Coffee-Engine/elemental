@@ -59,13 +59,8 @@
 
         sanitizeDOM: (svg) => {
             //Make sure the DOM is valid;
-            let DOM;
-            try {
-                DOM = elemental.DOMParser.parseFromString(svg, "application/xml");
-            } catch (error) {
-                console.log(error);
-                return "<p>Invalid DOM</p>";
-            }
+            let DOM = elemental.DOMParser.parseFromString(`<elementalSanitizer>${svg}</elementalSanitizer>`, "application/xml");
+            if (DOM.documentElement.tagName == "parsererror") return "<p>Invalid DOM</p>";
 
             //Search through children, and give the final result
             const children = [...DOM.querySelectorAll("*")];
@@ -75,7 +70,7 @@
             }
 
             //Return the final sanitized HTML
-            return DOM.documentElement.outerHTML;
+            return DOM.documentElement.innerHTML;
         }
     }
 

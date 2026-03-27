@@ -630,8 +630,9 @@
             hue: "h",
             satValue: [ "s", "v" ]
         },
-        defaultRatio: [8, 4],
-        gradientSelectionGraceArea: 0.05
+
+        addGradientPointIcon: "",
+        removeGradientPointIcon: ""
     };
 
     elemental.colorPickerModule = class {
@@ -796,7 +797,7 @@
             this.buttonContainer.className = `${parent.prefix}gradient-buttons`;
 
             this.removeButton = document.createElement("div");
-            this.removeButton.innerHTML = 
+            this.removeButton.innerHTML = elemental.sanitizeDOM(elemental.colorPickerConfig.removeGradientPointIcon);
 
             this.modeContainer = document.createElement("div");
             this.modeContainer.className = `${parent.prefix}gradient-modes`;
