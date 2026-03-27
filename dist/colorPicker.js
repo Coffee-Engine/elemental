@@ -795,6 +795,9 @@
             this.buttonContainer = document.createElement("div");
             this.buttonContainer.className = `${parent.prefix}gradient-buttons`;
 
+            this.removeButton = document.createElement("div");
+            this.removeButton.innerHTML = 
+
             this.modeContainer = document.createElement("div");
             this.modeContainer.className = `${parent.prefix}gradient-modes`;
 
@@ -814,6 +817,7 @@
             //Create the display gradient but keep it hidden because it will only appear when a gradient mode is selected.
             this.displayGradient = document.createElement("div");
             this.displayGradient.className = `${parent.prefix}gradient-display`;
+
 
             //Behavior for the display gradient is this
             // click -> (Is on selector) -> no? -> create point

@@ -43,6 +43,39 @@
             elemental.elements[safeName] = definedElement;
 
             return definedElement;
+        },
+
+        DOMParser: new DOMParser(),
+        //Just in case.
+        badElements: [
+            "script",
+            "foreignobject",
+            "style",
+            "link",
+            "iframe",
+            "embed",
+            "title"
+        ],
+
+        sanitizeDOM: (svg) => {
+            //Make sure the DOM is valid;
+            let DOM;
+            try {
+                DOM = elemental.DOMParser.parseFromString(svg, "application/xml");
+            } catch (error) {
+                console.log(error);
+                return "<p>Invalid DOM</p>";
+            }
+
+            //Search through children, and give the final result
+            const children = [...DOM.querySelectorAll("*")];
+            for (let childID = 0; childID < children.length; childID++) {
+                const child = children[childID];
+                if (elemental.badElements.includes(child.tagName.toLowerCase())) child.parentElement.removeChild(child);
+            }
+
+            //Return the final sanitized HTML
+            return DOM.documentElement.outerHTML;
         }
     }
 
