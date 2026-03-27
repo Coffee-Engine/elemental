@@ -888,6 +888,45 @@
                         this.parent.gradientIndex = i;
                         this.parent.updateColor(null, 0);
                         element.className = `${this.parent.prefix}gradient-point ${this.parent.prefix}gradient-point-selected`;
+
+                        //Drag function for incase we want to move the selector.
+                        let dragged = false;
+
+                        const dragFunction = (event) => {
+                            //calculate and change the percentage value
+                            const { left, right, width } = this.displayGradient.getBoundingClientRect();
+                            const percentage = (Math.max(Math.min(right, event.clientX), left) - left) / width;
+                            gradient.colors[i][1] = percentage;
+
+                            //Tick the dragged bool, and update values;
+                            dragged = true;
+
+                            this.parent.color.organizeColors();
+                            
+                            //If we changed index find out. our new one
+                            if (gradient.colors[i][0] != color[0]) {
+                                i = gradient.colors.findIndex((val) => val[0] == color[0]);
+                                this.parent.gradientIndex = i;
+                            }
+
+                            this.parent.updateColor(null, 0);
+                            element.style.setProperty("--x", `${percentage * 100}%`);
+                        }
+
+                        const dragEnd = (event) => {
+                            document.body.removeEventListener("mousemove", dragFunction);
+                            document.body.removeEventListener("mouseup", dragEnd);
+
+                            //If we dragged update the color and stuff;
+                            if (dragged) {
+                                this.parent.updateColor(null, 0);
+                                this.parent.color.organizeColors();
+                                this.addSelectors();
+                            }
+                        }
+
+                        document.body.addEventListener("mousemove", dragFunction);
+                        document.body.addEventListener("mouseup", dragEnd);
                     }
 
                     element.style.setProperty("--color", color[0].hex);
