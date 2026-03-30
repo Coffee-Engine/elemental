@@ -794,6 +794,7 @@
             if (parent.color instanceof elemental.colorLib.color) this._mode = "none";
             else this._mode = parent.color.mode;
 
+            //Create the elements
             this.gradientContainer = document.createElement("div");
             this.gradientContainer.className = `${parent.prefix}gradient-container`;
 
@@ -836,7 +837,9 @@
             this.pointControlContainer.appendChild(this.removeButton);
 
             this.buttonContainer.appendChild(this.modeContainer);
-            this.buttonContainer.appendChild(this.pointControlContainer);
+
+            this.gradientContainer.appendChild(this.buttonContainer);
+            container.appendChild(this.gradientContainer);
 
             //functionality
             this.modes.none.onclick = () => this.mode = "none";
@@ -910,9 +913,6 @@
                     this.addSelectors();
                 }
             }
-
-            this.gradientContainer.appendChild(this.buttonContainer);
-            container.appendChild(this.gradientContainer);
 
             this.updateMode(this.mode, this.mode);
             this.addSelectors();
@@ -1045,8 +1045,12 @@
             //Convert the color if need be;
             if (this.mode != "none") { 
                 if (!this.displayGradient.parentElement) this.gradientContainer.appendChild(this.displayGradient);
+                this.buttonContainer.appendChild(this.pointControlContainer);
             }
-            else if (this.displayGradient.parentElement) this.displayGradient.parentElement.removeChild(this.displayGradient);
+            else if (this.displayGradient.parentElement) {
+                this.displayGradient.parentElement.removeChild(this.displayGradient);
+                this.pointControlContainer.parentElement.removeChild(this.pointControlContainer);
+            }
 
             //Now we convert the color if need be;
             if (current != last) {
