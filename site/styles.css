@@ -6,24 +6,3 @@ body {
     background-color: #09090f;
     color: #ffefef;
 }
-
-button {
-    background-color: #09090f;
-    
-    border-color: #ffefef;
-    border-style: solid;
-    border-radius: 8px;
-
-    color: #ffefef;
-
-    transition: 300ms border-radius;
-}
-
-button:hover {
-    border-radius: 12px;
-}
-
-button:active {
-    border-radius: 0px;
-    transition: 0ms border-radius;
-}

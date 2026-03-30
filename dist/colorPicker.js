@@ -803,10 +803,10 @@
 
             //Create mode buttons
             this.modes = {
-                none: document.createElement("button"),
-                linear: document.createElement("button"),
-                radial: document.createElement("button"),
-                conic: document.createElement("button"),
+                none: document.createElement("div"),
+                linear: document.createElement("div"),
+                radial: document.createElement("div"),
+                conic: document.createElement("div"),
             };
 
             this.pointControlContainer = document.createElement("div");
@@ -1502,6 +1502,7 @@
             aspect-ratio: 1;
 
             background: var(--gradientColor);
+            border: 2px #9f9f9f outset;
         }
 
         .elemental-color-picker-gradient-button {
