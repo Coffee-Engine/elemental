@@ -385,10 +385,14 @@
             }
 
             createPoint(percentage, color) {
-
                 //Find the inbetween color.
                 if (!color) {
-                    for (let i = 0; i < this.colors.length - 1; i++) {
+                    const last = this.colors.length - 1;
+
+                    //If we are before the first, or after the last inherit the first or last colours.
+                    if (percentage < this.colors[0][1]) color = new elemental.colorLib.color(this.colors[0][0].hex);
+                    else if (percentage > this.colors[last][1]) color = new elemental.colorLib.color(this.colors[last][0].hex);
+                    else for (let i = 0; i < last; i++) {
                         const l = this.colors[i];
                         const r = this.colors[i + 1];
 
@@ -804,11 +808,6 @@
                 conic: document.createElement("button"),
             };
 
-            this.modes.none.onclick = () => this.mode = "none";
-            this.modes.linear.onclick = () => this.mode = "linear";
-            this.modes.radial.onclick = () => this.mode = "radial";
-            this.modes.conic.onclick = () => this.mode = "conic";
-
             this.pointControlContainer = document.createElement("div");
             this.pointControlContainer.className = `${parent.prefix}gradient-modes ${parent.prefix}gradient-point-controls`;
 
@@ -826,6 +825,71 @@
             //Create the display gradient but keep it hidden because it will only appear when a gradient mode is selected.
             this.displayGradient = document.createElement("div");
             this.displayGradient.className = `${parent.prefix}gradient-display`;
+
+            //Append the html elements and update the selected mode.
+            this.modeContainer.appendChild(this.modes.none);
+            this.modeContainer.appendChild(this.modes.linear);
+            this.modeContainer.appendChild(this.modes.radial);
+            this.modeContainer.appendChild(this.modes.conic);
+
+            this.pointControlContainer.appendChild(this.addButton);
+            this.pointControlContainer.appendChild(this.removeButton);
+
+            this.buttonContainer.appendChild(this.modeContainer);
+            this.buttonContainer.appendChild(this.pointControlContainer);
+
+            //functionality
+            this.modes.none.onclick = () => this.mode = "none";
+            this.modes.linear.onclick = () => this.mode = "linear";
+            this.modes.radial.onclick = () => this.mode = "radial";
+            this.modes.conic.onclick = () => this.mode = "conic";
+
+            //Get the current color, find the next/last point, and add the inbetween.
+            this.addButton.onclick = () => {
+                let interpIndex = parent.gradientIndex;
+                
+                //Make sure we are a gradient
+                if (parent.color instanceof elemental.colorLib.gradient) {
+                    //Find the next best sample
+                    if (interpIndex >= (parent.color.colors.length - 1)) interpIndex--;
+                    else interpIndex++;
+
+                    //Get the colors
+                    const cur = parent.color.colors[parent.gradientIndex];
+                    const next = parent.color.colors[interpIndex];
+
+                    const percentage = (cur[1] + next[1]) / 2;
+
+                    //Move to new point
+                    const id = parent.color.createPoint(percentage);
+                    parent.gradientIndex = id;
+
+                    //Update the color selectors
+                    this.parent.updateColor(null, 0);
+                    this.addSelectors();
+                }
+            }
+
+            //Kill the current color
+            this.removeButton.onclick = () => {
+                let interpIndex = parent.gradientIndex;
+                
+                //Make sure we are a gradient
+                if (parent.color instanceof elemental.colorLib.gradient) {
+                    if (parent.color.colors.length <= 2) return;
+
+                    //Find the next best sample
+                    parent.color.colors.splice(interpIndex, 1);
+
+                    if (interpIndex >= parent.color.colors.length) interpIndex--;
+                    parent.gradientIndex = interpIndex;
+
+
+                    //Update the color selectors
+                    this.parent.updateColor(null, 0);
+                    this.addSelectors();
+                }
+            }
 
 
             //Behavior for the display gradient is this
@@ -846,18 +910,6 @@
                     this.addSelectors();
                 }
             }
-
-            //Append the html elements and update the selected mode.
-            this.modeContainer.appendChild(this.modes.none);
-            this.modeContainer.appendChild(this.modes.linear);
-            this.modeContainer.appendChild(this.modes.radial);
-            this.modeContainer.appendChild(this.modes.conic);
-
-            this.pointControlContainer.appendChild(this.addButton);
-            this.pointControlContainer.appendChild(this.removeButton);
-
-            this.buttonContainer.appendChild(this.modeContainer);
-            this.buttonContainer.appendChild(this.pointControlContainer);
 
             this.gradientContainer.appendChild(this.buttonContainer);
             container.appendChild(this.gradientContainer);
