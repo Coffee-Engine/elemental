@@ -49,8 +49,15 @@ document.getElementById("download").onclick = () => {
     })).then(() => {
         fetch("LICENSE").then(res => res.text()).then(text => {
             //Add the license
-            compiled = `//==--==--==\\\\\n${text}\n//==--==--==\\\\` + compiled;
-            console.log(compiled);
+            compiled = `/*===---\n${text}\n---===*/\n\n` + compiled;
+
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(new Blob([compiled]));
+            link.href = url;
+            link.download = `elemental-${Date.now()}.js`;
+            link.click();
+
+            URL.revokeObjectURL(url);
         })
     })
 }
