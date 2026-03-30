@@ -1045,11 +1045,11 @@
             //Convert the color if need be;
             if (this.mode != "none") { 
                 if (!this.displayGradient.parentElement) this.gradientContainer.appendChild(this.displayGradient);
-                this.buttonContainer.appendChild(this.pointControlContainer);
+                if (!this.pointControlContainer.parentElement) this.buttonContainer.appendChild(this.pointControlContainer);
             }
-            else if (this.displayGradient.parentElement) {
-                this.displayGradient.parentElement.removeChild(this.displayGradient);
-                this.pointControlContainer.parentElement.removeChild(this.pointControlContainer);
+            else {
+                if (this.displayGradient.parentElement) this.displayGradient.parentElement.removeChild(this.displayGradient);
+                if (this.pointControlContainer.parentElement) this.pointControlContainer.parentElement.removeChild(this.pointControlContainer);
             }
 
             //Now we convert the color if need be;

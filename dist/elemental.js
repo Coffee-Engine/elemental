@@ -68,10 +68,14 @@
                 const child = children[childID];
                 if (elemental.badElements.includes(child.tagName.toLowerCase())) child.parentElement.removeChild(child);
 
+                //Search through attributes
                 const names = child.getAttributeNames();
                 for (let attributeID = 0; attributeID < names.length; attributeID++) {
                     const attribute = names[attributeID];
+
+                    //If possibly an event
                     if (attribute.startsWith("on")) child.removeAttribute(attribute);
+                    //If we have any odd values, like a "javascript:" uri
                     else {
                         const data = child.getAttribute(attribute);
                         if (data.startsWith("javascript:")) child.removeAttribute(attribute);
