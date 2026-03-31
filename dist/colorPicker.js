@@ -647,7 +647,11 @@
         hexInputShowsGradient: true,
 
         addGradientPointIcon: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="73.22485" height="73.22485" viewBox="0,0,73.22485,73.22485"><g transform="translate(-203.38757,-143.38757)"><g fill="none" stroke-miterlimit="10"><path d="M240,149.1568v61.68639" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M209.15681,180h61.68639" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M203.38757,216.61243v-73.22485h73.22485v73.22485z" stroke="none" stroke-width="0" stroke-linecap="butt"/></g></g></svg>`,
-        removeGradientPointIcon: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="73.22485" height="73.22485" viewBox="0,0,73.22485,73.22485"><g transform="translate(-203.38757,-143.38757)"><g fill="none" stroke-miterlimit="10"><path d="M218.19057,158.19057l43.61887,43.61887" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M218.19057,201.80943l43.61886,-43.61886" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M203.38757,216.61243v-73.22485h73.22485v73.22485z" stroke="none" stroke-width="0" stroke-linecap="butt"/></g></g></svg>`
+        removeGradientPointIcon: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="73.22485" height="73.22485" viewBox="0,0,73.22485,73.22485"><g transform="translate(-203.38757,-143.38757)"><g fill="none" stroke-miterlimit="10"><path d="M218.19057,158.19057l43.61887,43.61887" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M218.19057,201.80943l43.61886,-43.61886" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M203.38757,216.61243v-73.22485h73.22485v73.22485z" stroke="none" stroke-width="0" stroke-linecap="butt"/></g></g></svg>`,
+        doneButtonIcon: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="65.19397" height="65.19397" viewBox="0,0,65.19397,65.19397"><g transform="translate(-207.40302,-147.40302)"><g fill="none" stroke-miterlimit="10"><path d="M214.67672,179.166l15.69437,15.69437l34.95219,-29.72073" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M207.40302,212.59698v-65.19397h65.19397v65.19397z" stroke="none" stroke-width="0" stroke-linecap="butt"/></g></g></svg>`,
+    
+        //Originally from a swatch, but now awesome.
+        globalSwatch: [ "#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#00ffff", "#ffffff", "#000000" ]
     };
 
     elemental.colorPickerModule = class {
@@ -823,6 +827,7 @@
             this.pointControlContainer = document.createElement("div");
             this.pointControlContainer.className = `${parent.prefix}gradient-modes ${parent.prefix}gradient-point-controls`;
 
+            //We use SVGs to allow for the icons to be recoloured in real time. Ain't that neat?
             this.addButton = document.createElement("div");
             this.addButton.innerHTML = elemental.sanitizeDOM(elemental.colorPickerConfig.addGradientPointIcon);
             this.addButton.classList = `${parent.prefix}gradient-button ${parent.prefix}gradient-add-button`;
@@ -1105,9 +1110,56 @@
         condition(parent) { return parent.hasAttribute("gradient"); }
     }
 
+    //And palette tools
+    elemental.colorPickerPalette = class extends elemental.colorPickerModule {
+        build(parent, container) {
+            //Create the elements
+            this.colorContainer = document.createElement("div");
+            this.colorContainer.className = `${parent.prefix}palette-container`;
+
+            //Parse palette
+            let palette = parent.getAttribute("swatch")
+            if (palette) palette = palette.split(",").map((val, ind) => {
+                const color = val.trim();
+
+                //Replace with pink and black if failing.
+                if (!color.startsWith("#")) return ((ind % 2) == 1) ? "#ff00ff" : "#000000";
+                return color;
+            });
+            else palette = [...elemental.colorPickerConfig.globalSwatch];
+
+            //Append the container
+            container.appendChild(this.colorContainer);
+
+            //And add the colors
+            for (let colorID = 0; colorID < palette.length; colorID++) {
+                const color = palette[colorID];
+
+                const element = document.createElement("div");
+                element.className = `${parent.prefix}palette-color`;
+                element.style.setProperty("--color", color);
+
+                this.colorContainer.appendChild(element);
+
+                //functionality for each one.
+                element.onclick = () => {
+                    //Grab the current color
+                    let pickerColor = parent.color;
+                    if (pickerColor instanceof elemental.colorLib.gradient) pickerColor = pickerColor.colors[parent.gradientIndex][0];
+
+                    pickerColor.hex = color;
+                    parent.updateColor(null, 0);
+                }
+            }
+        }
+
+        condition(parent) { return parent.hasAttribute("swatch"); }
+    }
+
     //Finally the hex, and done button
     elemental.colorPickerConfirmation = class extends elemental.colorPickerModule {
         build(parent, container) {
+            //Create the elements
             this.container = document.createElement("div");
             this.container.className = `${parent.prefix}confirmation-container`;
 
@@ -1116,6 +1168,7 @@
             this.hexInput.className = `${parent.prefix}confirmation-hex`;
 
             this.doneButton = document.createElement("div");
+            this.doneButton.innerHTML = elemental.sanitizeDOM(elemental.colorPickerConfig.doneButtonIcon);
             this.doneButton.className = `${parent.prefix}confirmation-done-button`;
 
             this.container.appendChild(this.hexInput);
@@ -1129,6 +1182,10 @@
                     this.parent.updateColor("full", this.hexInput.value);
                 }
                 else parent.updateColor("hex", this.hexInput.value);
+            }
+
+            this.doneButton.onclick = () => {
+                parent.destroyPopup()
             }
         }
 
@@ -1151,6 +1208,7 @@
     elemental.colorPickerConfig.modules = [
         elemental.colorPickerGradient,
         elemental.colorPickerGeneric,
+        elemental.colorPickerPalette,
         elemental.colorPickerConfirmation
     ]
 
@@ -1654,9 +1712,10 @@
 
         .elemental-color-picker-confirmation-done-button {
             border: 4px #dfdfdf outset;
+            color: #000000;
             
             width: auto;
-            height: calc(100% - 8px);
+            height: 20px;
             
             aspect-ratio: 1;
         }
@@ -1666,6 +1725,45 @@
         }
 
         .elemental-color-picker-confirmation-done-button:active {
+            border: 4px #dfdfdf inset;
+        }
+
+        .elemental-color-picker-confirmation-done-button > svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .elemental-color-picker-palette-container {
+            display: flex;
+
+            margin: 4px;
+
+            justify-content: center;
+
+            background: #dfdfdf;
+            border: 4px #efefef inset;
+        }
+
+        .elemental-color-picker-palette-color {
+            --color: #ff0000;
+
+            background-color: var(--color);
+            border: 4px #efefef outset;
+            border-radius: 50%;
+
+            aspect-ratio: 1;
+
+            width: auto;
+            height: 16px;
+
+            margin: 2px;
+        }
+
+        .elemental-color-picker-palette-color:hover {
+            border: 4px #dfdfdf outset;
+        }
+
+        .elemental-color-picker-palette-color:active {
             border: 4px #dfdfdf inset;
         }
         `
