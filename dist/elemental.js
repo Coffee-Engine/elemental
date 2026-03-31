@@ -7,9 +7,11 @@
         newElement: (name, options) => {
             if (!name || !options) return;
 
+            //Define the new element
             let definedElement = class extends HTMLElement {};
             if (!options.class) {
                 definedElement = class extends HTMLElement {
+
                     constructor() { super(); this.created(this); }
 
                     adoptedCallback() { this.adopted(this, this.parentElement != null, this.parentElement); }
@@ -28,9 +30,19 @@
             }
             else definedElement = options.class;
 
+            //Get the safe name and css prefix
             const safeName = name.toLowerCase().replaceAll(/\s/g, "-");
+            options.prefix = options.prefix || `elemental-${safeName}-`;
+            definedElement.prototype.cssPrefix = options.prefix;
+
+            //Add css is available
             if (options.css) {
-                defaultCSS += `\n/*${name}*/\n${options.css.replaceAll("<el>", safeName).replaceAll("<element-name>", safeName)}`;
+                defaultCSS += `\n/*${name}*/\n${options.css
+                    .replaceAll("<el>", safeName)
+                    .replaceAll("<element-name>", safeName)
+                    .replaceAll("<pr>", `.${options.prefix}`)
+                    .replaceAll("<prefix>", `.${options.prefix}`)
+                }`;
                 elemental.styleElement.innerHTML = defaultCSS;
             }
             

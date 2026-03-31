@@ -671,40 +671,40 @@
     elemental.colorPickerGeneric = class extends elemental.colorPickerModule {
         build(parent, container) {
             this.sliderContainer = document.createElement('div');
-            this.sliderContainer.className = `${parent.prefix}slider-container`;
+            this.sliderContainer.className = `${parent.cssPrefix}slider-container`;
             
             this.satValueAdjust = document.createElement("div");
-            this.satValueAdjust.className = `${parent.prefix}satBrightPicker`;
+            this.satValueAdjust.className = `${parent.cssPrefix}satBrightPicker`;
             
             this.satValueSlider = document.createElement("div");
-            this.satValueSlider.className = `${parent.prefix}satValueSlider`;
+            this.satValueSlider.className = `${parent.cssPrefix}satValueSlider`;
 
             this.hueAdjust = document.createElement("div");
-            this.hueAdjust.className = `${parent.prefix}-adjust ${parent.prefix}hueAdjust`;
+            this.hueAdjust.className = `${parent.cssPrefix}-adjust ${parent.cssPrefix}hueAdjust`;
             
             this.hueSlider = document.createElement("div");
-            this.hueSlider.className = `${parent.prefix}slider ${parent.prefix}hueSlider`;
+            this.hueSlider.className = `${parent.cssPrefix}slider ${parent.cssPrefix}hueSlider`;
 
             this.colorPickerAdjustHolders = document.createElement("div");
-            this.colorPickerAdjustHolders.className = `${parent.prefix}adjustHolder`;
+            this.colorPickerAdjustHolders.className = `${parent.cssPrefix}adjustHolder`;
             
             this.firstAdjust = document.createElement("div");
-            this.firstAdjust.className = `${parent.prefix}adjust ${parent.prefix}firstAdjust`;
+            this.firstAdjust.className = `${parent.cssPrefix}adjust ${parent.cssPrefix}firstAdjust`;
             
             this.firstSlider = document.createElement("div");
-            this.firstSlider.className = `${parent.prefix}slider`;
+            this.firstSlider.className = `${parent.cssPrefix}slider`;
             
             this.secondAdjust = document.createElement("div");
-            this.secondAdjust.className = `${parent.prefix}adjust ${parent.prefix}secondAdjust`;
+            this.secondAdjust.className = `${parent.cssPrefix}adjust ${parent.cssPrefix}secondAdjust`;
             
             this.secondSlider = document.createElement("div");
-            this.secondSlider.className = `${parent.prefix}slider`;
+            this.secondSlider.className = `${parent.cssPrefix}slider`;
             
             this.thirdAdjust = document.createElement("div");
-            this.thirdAdjust.className = `${parent.prefix}adjust ${parent.prefix}thirdAdjust`;
+            this.thirdAdjust.className = `${parent.cssPrefix}adjust ${parent.cssPrefix}thirdAdjust`;
             
             this.thirdSlider = document.createElement("div");
-            this.thirdSlider.className = `${parent.prefix}slider`;
+            this.thirdSlider.className = `${parent.cssPrefix}slider`;
             
 
             this.satValueAdjust.appendChild(this.satValueSlider);
@@ -725,10 +725,10 @@
             //Set up alpha is alpha exists
             if (parent.hasAttribute("alpha")) {
                 this.alphaAdjust = document.createElement("div");
-                this.alphaAdjust.className = `${parent.prefix}adjust ${parent.prefix}alphaAdjust`;
+                this.alphaAdjust.className = `${parent.cssPrefix}adjust ${parent.cssPrefix}alphaAdjust`;
                 
                 this.alphaSlider = document.createElement("div");
-                this.alphaSlider.className = `${parent.prefix}slider ${parent.prefix}alphaSlider`;
+                this.alphaSlider.className = `${parent.cssPrefix}slider ${parent.cssPrefix}alphaSlider`;
 
                 this.alphaAdjust.appendChild(this.alphaSlider);
                 this.colorPickerAdjustHolders.appendChild(this.alphaAdjust);
@@ -811,10 +811,10 @@
 
             //Create the elements
             this.gradientContainer = document.createElement("div");
-            this.gradientContainer.className = `${parent.prefix}gradient-container`;
+            this.gradientContainer.className = `${parent.cssPrefix}gradient-container`;
 
             this.buttonContainer = document.createElement("div");
-            this.buttonContainer.className = `${parent.prefix}gradient-buttons`;
+            this.buttonContainer.className = `${parent.cssPrefix}gradient-buttons`;
 
             //Create mode buttons
             this.modes = {
@@ -825,23 +825,23 @@
             };
 
             this.pointControlContainer = document.createElement("div");
-            this.pointControlContainer.className = `${parent.prefix}gradient-modes ${parent.prefix}gradient-point-controls`;
+            this.pointControlContainer.className = `${parent.cssPrefix}gradient-modes ${parent.cssPrefix}gradient-point-controls`;
 
             //We use SVGs to allow for the icons to be recoloured in real time. Ain't that neat?
             this.addButton = document.createElement("div");
             this.addButton.innerHTML = elemental.sanitizeDOM(elemental.colorPickerConfig.addGradientPointIcon);
-            this.addButton.classList = `${parent.prefix}gradient-button ${parent.prefix}gradient-add-button`;
+            this.addButton.classList = `${parent.cssPrefix}gradient-button ${parent.cssPrefix}gradient-add-button`;
 
             this.removeButton = document.createElement("div");
             this.removeButton.innerHTML = elemental.sanitizeDOM(elemental.colorPickerConfig.removeGradientPointIcon);
-            this.removeButton.classList = `${parent.prefix}gradient-button ${parent.prefix}gradient-remove-button`;
+            this.removeButton.classList = `${parent.cssPrefix}gradient-button ${parent.cssPrefix}gradient-remove-button`;
 
             this.modeContainer = document.createElement("div");
-            this.modeContainer.className = `${parent.prefix}gradient-modes`;
+            this.modeContainer.className = `${parent.cssPrefix}gradient-modes`;
 
             //Create the display gradient but keep it hidden because it will only appear when a gradient mode is selected.
             this.displayGradient = document.createElement("div");
-            this.displayGradient.className = `${parent.prefix}gradient-display`;
+            this.displayGradient.className = `${parent.cssPrefix}gradient-display`;
 
             //Append the html elements and update the selected mode.
             this.modeContainer.appendChild(this.modes.none);
@@ -966,11 +966,11 @@
                     const color = gradient.colors[i];          
                     //Create the color's element and assign needed variables
                     const element = document.createElement("div");
-                    element.className = `${this.parent.prefix}gradient-point`;
+                    element.className = `${this.parent.cssPrefix}gradient-point`;
                     this.displayGradient.appendChild(element);
 
                     //Check to see if it's awesome and cool, and totally the selected one.
-                    if (this.parent.gradientIndex == i) element.className += ` ${this.parent.prefix}gradient-point-selected`;
+                    if (this.parent.gradientIndex == i) element.className += ` ${this.parent.cssPrefix}gradient-point-selected`;
 
                     //The behavior is rather simple, but we do need to stop propagation to prevent unwanted point creation.
                     element.onmousedown = (event) => {
@@ -978,12 +978,12 @@
                         event.stopPropagation();
 
                         //Reset the class of the previously selected
-                        this.colorGrabbers[this.parent.gradientIndex].className = `${this.parent.prefix}gradient-point`;
+                        this.colorGrabbers[this.parent.gradientIndex].className = `${this.parent.cssPrefix}gradient-point`;
 
                         //Change the selection and select the current one
                         this.parent.gradientIndex = i;
                         this.parent.updateColor(null, 0);
-                        element.className = `${this.parent.prefix}gradient-point ${this.parent.prefix}gradient-point-selected`;
+                        element.className = `${this.parent.cssPrefix}gradient-point ${this.parent.cssPrefix}gradient-point-selected`;
 
                         //Drag function for incase we want to move the selector.
                         let dragged = false;
@@ -1059,9 +1059,9 @@
         updateMode(current, last) {
             //Update buttons to reflect current selection.
             for (let buttonMode in this.modes) {
-                this.modes[buttonMode].className = `${this.parent.prefix}gradient-mode ${this.parent.prefix}gradient-mode-${buttonMode}`;
+                this.modes[buttonMode].className = `${this.parent.cssPrefix}gradient-mode ${this.parent.cssPrefix}gradient-mode-${buttonMode}`;
 
-                if (this.mode == buttonMode) this.modes[buttonMode].className += ` ${this.parent.prefix}gradient-mode-selected`;
+                if (this.mode == buttonMode) this.modes[buttonMode].className += ` ${this.parent.cssPrefix}gradient-mode-selected`;
             }
 
             //Convert the color if need be;
@@ -1115,7 +1115,7 @@
         build(parent, container) {
             //Create the elements
             this.colorContainer = document.createElement("div");
-            this.colorContainer.className = `${parent.prefix}palette-container`;
+            this.colorContainer.className = `${parent.cssPrefix}palette-container`;
 
             //Parse palette
             let palette = parent.getAttribute("swatch")
@@ -1136,7 +1136,7 @@
                 const color = palette[colorID];
 
                 const element = document.createElement("div");
-                element.className = `${parent.prefix}palette-color`;
+                element.className = `${parent.cssPrefix}palette-color`;
                 element.style.setProperty("--color", color);
 
                 this.colorContainer.appendChild(element);
@@ -1161,15 +1161,15 @@
         build(parent, container) {
             //Create the elements
             this.container = document.createElement("div");
-            this.container.className = `${parent.prefix}confirmation-container`;
+            this.container.className = `${parent.cssPrefix}confirmation-container`;
 
             this.hexInput = document.createElement("input");
             this.hexInput.type = "text";
-            this.hexInput.className = `${parent.prefix}confirmation-hex`;
+            this.hexInput.className = `${parent.cssPrefix}confirmation-hex`;
 
             this.doneButton = document.createElement("div");
             this.doneButton.innerHTML = elemental.sanitizeDOM(elemental.colorPickerConfig.doneButtonIcon);
-            this.doneButton.className = `${parent.prefix}confirmation-done-button`;
+            this.doneButton.className = `${parent.cssPrefix}confirmation-done-button`;
 
             this.container.appendChild(this.hexInput);
             this.container.appendChild(this.doneButton);
@@ -1219,7 +1219,6 @@
             static observedAttributes = ["value", "gradient", "alpha", "isgradient"];
 
             #fromUpdate = false;
-            prefix = "elemental-color-picker-";
 
             gradientIndex = 0;
 
@@ -1341,7 +1340,7 @@
             buildPopup(x, y) {
                 //Create the container
                 this.container = document.createElement('div');
-                this.container.className = `${this.prefix}container`;
+                this.container.className = `${this.cssPrefix}container`;
                 this.container.style.setProperty("--x", `${x}px`);
                 this.container.style.setProperty("--y", `${y}px`);
 
@@ -1451,7 +1450,7 @@
             background: var(--color), linear-gradient(to bottom, #9f9f9f 50%, #cfcfcf 50%);
         }
 
-        .elemental-color-picker-container {
+        <pr>container {
             --x: 0px;
             --y: 0px;
 
@@ -1468,14 +1467,14 @@
             z-index: 9999;
         }
 
-        .elemental-color-picker-slider-container {
+        <pr>slider-container {
             display: grid;
             grid-template-columns: 50% 10% 40%;
             
             aspect-ratio: 2/1;
         }
 
-        .elemental-color-picker-satBrightPicker {
+        <pr>satBrightPicker {
             --color: #f00;
 
             margin: 8px;
@@ -1483,7 +1482,7 @@
             background: linear-gradient(to top, #000 0%, transparent 100%), linear-gradient(to right, #fff 0%, var(--color) 100%);
         }
 
-        .elemental-color-picker-satValueSlider {
+        <pr>satValueSlider {
             --color: #000000;
             --x: 0%;
             --y: 0%;
@@ -1503,7 +1502,7 @@
             background-color: var(--color);        
         }
         
-        .elemental-color-picker-hueAdjust {
+        <pr>hueAdjust {
             --saturation: 100%;
             --lightness: 50%;
 
@@ -1527,13 +1526,13 @@
             overflow: hidden;
         }
 
-        .elemental-color-picker-adjustHolder {
+        <pr>adjustHolder {
             display: grid;
             grid-template-rows: 25% 25% 25% 25%;
             margin: 4px 0px 4px 0px;
         }
 
-        .elemental-color-picker-adjust  {
+        <pr>adjust  {
             --combinedLow: #000000;
             --color: #ff0000;
 
@@ -1544,25 +1543,25 @@
             display: block;
         }
 
-        .elemental-color-picker-firstAdjust { 
+        <pr>firstAdjust { 
             --color: #ff0000;
             background: linear-gradient(to right, var(--combinedLow) 0%, var(--color) 100%);
         }
-        .elemental-color-picker-secondAdjust { 
+        <pr>secondAdjust { 
             --color: #00ff00;
             background: linear-gradient(to right, var(--combinedLow) 0%, var(--color) 100%);
         }
-        .elemental-color-picker-thirdAdjust {
+        <pr>thirdAdjust {
             --color: #0000ff;
             background: linear-gradient(to right, var(--combinedLow) 0%, var(--color) 100%);
         }
 
-        .elemental-color-picker-alphaAdjust {
+        <pr>alphaAdjust {
             --color: #ffffff;
             background: linear-gradient(to right, transparent 0%, var(--color) 100%), linear-gradient(to bottom, transparent 50%, #00000033 50%);
         }
 
-        .elemental-color-picker-slider {
+        <pr>slider {
             --color: #000000;
 
             --x: 0%;
@@ -1580,11 +1579,11 @@
             background-color: var(--color);
         }
 
-        .elemental-color-picker-alphaSlider {
+        <pr>alphaSlider {
             background: linear-gradient(to top, var(--color) 0%, var(--color) 100%), linear-gradient(to bottom, #00000033 0%, transparent 100%);
         }
 
-        .elemental-color-picker-hueSlider {
+        <pr>hueSlider {
             position: relative;
             left: 0px;
             top: var(--x);
@@ -1595,23 +1594,23 @@
             transform: translate(0%, -50%);
         }
 
-        .elemental-color-picker-gradient-container {
+        <pr>gradient-container {
             display: grid;
             grid-template-rows: auto auto;
             margin: 4px;
         }
 
-        .elemental-color-picker-gradient-buttons {
+        <pr>gradient-buttons {
             display: grid;
             grid-template-columns: 1fr auto;
         }
 
-        .elemental-color-picker-gradient-modes {
+        <pr>gradient-modes {
             display: flex;
             justify-content: center;
         }
 
-        .elemental-color-picker-gradient-mode {
+        <pr>gradient-mode {
             --gradientColor: #5f5f5f;
 
             width: 16px;
@@ -1623,7 +1622,7 @@
             border: 2px #9f9f9f outset;
         }
 
-        .elemental-color-picker-gradient-button {
+        <pr>gradient-button {
             width: 12px;
             height: 12px;
             
@@ -1635,36 +1634,36 @@
             justify-content: center;
         }
 
-        .elemental-color-picker-gradient-button > svg {
+        <pr>gradient-button > svg {
             width: 12px;
             height: 12px;
         }
 
-        .elemental-color-picker-gradient-button:hover {
+        <pr>gradient-button:hover {
             background: #dfdfdf;
         }
 
-        .elemental-color-picker-gradient-button:active {
+        <pr>gradient-button:active {
             border: 4px #dfdfdf inset;
         }
 
-        .elemental-color-picker-gradient-mode-selected {
+        <pr>gradient-mode-selected {
             --gradientColor: #18a3ff;
         }
 
-        .elemental-color-picker-gradient-mode-linear {
+        <pr>gradient-mode-linear {
             background: linear-gradient(to right, transparent 0%, var(--gradientColor) 100%);
         }
 
-        .elemental-color-picker-gradient-mode-radial {
+        <pr>gradient-mode-radial {
             background: radial-gradient(at center, var(--gradientColor) 0%, transparent 100%);
         }
 
-        .elemental-color-picker-gradient-mode-conic {
+        <pr>gradient-mode-conic {
             background: conic-gradient(at center, var(--gradientColor) 0%, transparent 100%);
         }
 
-        .elemental-color-picker-gradient-display {
+        <pr>gradient-display {
             position:relative;
 
             /* Ha ha half life reference! */
@@ -1679,7 +1678,7 @@
             overflow: hidden;
         }
 
-        .elemental-color-picker-gradient-point {
+        <pr>gradient-point {
             --color: #ffffff;
             --x: 0%;
 
@@ -1696,21 +1695,21 @@
             transform: translate(-50%, 0%);
         }
 
-        .elemental-color-picker-gradient-point-selected {
+        <pr>gradient-point-selected {
             background: #18a3ff;
             border: 4px #dfdfdf inset;
         }
 
-        .elemental-color-picker-confirmation-container {
+        <pr>confirmation-container {
             display: grid;
             grid-template-columns: 1fr auto;
         }
 
-        .elemental-color-picker-confirmation-hex {
+        <pr>confirmation-hex {
             border: 4px #dfdfdf inset;
         }
 
-        .elemental-color-picker-confirmation-done-button {
+        <pr>confirmation-done-button {
             border: 4px #dfdfdf outset;
             color: #000000;
             
@@ -1720,20 +1719,20 @@
             aspect-ratio: 1;
         }
 
-        .elemental-color-picker-confirmation-done-button:hover {
+        <pr>confirmation-done-button:hover {
             background: #dfdfdf;
         }
 
-        .elemental-color-picker-confirmation-done-button:active {
+        <pr>confirmation-done-button:active {
             border: 4px #dfdfdf inset;
         }
 
-        .elemental-color-picker-confirmation-done-button > svg {
+        <pr>confirmation-done-button > svg {
             width: 20px;
             height: 20px;
         }
 
-        .elemental-color-picker-palette-container {
+        <pr>palette-container {
             display: flex;
 
             margin: 4px;
@@ -1744,7 +1743,7 @@
             border: 4px #efefef inset;
         }
 
-        .elemental-color-picker-palette-color {
+        <pr>palette-color {
             --color: #ff0000;
 
             background-color: var(--color);
@@ -1759,11 +1758,11 @@
             margin: 2px;
         }
 
-        .elemental-color-picker-palette-color:hover {
+        <pr>palette-color:hover {
             border: 4px #dfdfdf outset;
         }
 
-        .elemental-color-picker-palette-color:active {
+        <pr>palette-color:active {
             border: 4px #dfdfdf inset;
         }
         `
