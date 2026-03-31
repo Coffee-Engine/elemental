@@ -649,6 +649,7 @@
         addGradientPointIcon: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="73.22485" height="73.22485" viewBox="0,0,73.22485,73.22485"><g transform="translate(-203.38757,-143.38757)"><g fill="none" stroke-miterlimit="10"><path d="M240,149.1568v61.68639" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M209.15681,180h61.68639" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M203.38757,216.61243v-73.22485h73.22485v73.22485z" stroke="none" stroke-width="0" stroke-linecap="butt"/></g></g></svg>`,
         removeGradientPointIcon: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="73.22485" height="73.22485" viewBox="0,0,73.22485,73.22485"><g transform="translate(-203.38757,-143.38757)"><g fill="none" stroke-miterlimit="10"><path d="M218.19057,158.19057l43.61887,43.61887" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M218.19057,201.80943l43.61886,-43.61886" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M203.38757,216.61243v-73.22485h73.22485v73.22485z" stroke="none" stroke-width="0" stroke-linecap="butt"/></g></g></svg>`,
         doneButtonIcon: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="65.19397" height="65.19397" viewBox="0,0,65.19397,65.19397"><g transform="translate(-207.40302,-147.40302)"><g fill="none" stroke-miterlimit="10"><path d="M214.67672,179.166l15.69437,15.69437l34.95219,-29.72073" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M207.40302,212.59698v-65.19397h65.19397v65.19397z" stroke="none" stroke-width="0" stroke-linecap="butt"/></g></g></svg>`,
+        angleArrowIcon: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="62.2449" height="62.2449" viewBox="0,0,62.2449,62.2449"><g transform="translate(-208.87755,-148.87755)"><g stroke-miterlimit="10"><path d="M240,179.71523v-22.07249" fill="currentColor" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M234.99925,159.82583l5.00075,-6.58188l5.00075,6.58188z" fill="currentColor" stroke="currentColor" stroke-width="4" stroke-linecap="butt"/><path d="M208.87755,211.12245v-62.2449h62.2449v62.2449z" fill="none" stroke="none" stroke-width="0" stroke-linecap="butt"/></g></g></svg>`,
     
         //Originally from a swatch, but now awesome.
         globalSwatch: [ "#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#00ffff", "#ffffff", "#000000" ]
@@ -809,20 +810,27 @@
             if (parent.color instanceof elemental.colorLib.color) this._mode = "none";
             else this._mode = parent.color.mode;
 
-            //Create the elements
+            //Define modes with angles
+            this.modesWithAngles = [
+                "linear",
+                "conic"
+            ]
+
+            //Splits between colors and angle
+            this.topSplit = document.createElement("div");
+            this.topSplit.className = `${parent.cssPrefix}gradient-top-split`;
+
+            //The angle selector
+            this.angleInput = document.createElement("div");
+            this.angleInput.innerHTML = elemental.sanitizeDOM(elemental.colorPickerConfig.angleArrowIcon);
+            this.angleInput.classList = `${parent.cssPrefix}gradient-angleSelector`;
+
+            //Then the actual gradient and gradient selection stuff.
             this.gradientContainer = document.createElement("div");
             this.gradientContainer.className = `${parent.cssPrefix}gradient-container`;
 
             this.buttonContainer = document.createElement("div");
             this.buttonContainer.className = `${parent.cssPrefix}gradient-buttons`;
-
-            //Create mode buttons
-            this.modes = {
-                none: document.createElement("div"),
-                linear: document.createElement("div"),
-                radial: document.createElement("div"),
-                conic: document.createElement("div"),
-            };
 
             this.pointControlContainer = document.createElement("div");
             this.pointControlContainer.className = `${parent.cssPrefix}gradient-modes ${parent.cssPrefix}gradient-point-controls`;
@@ -836,8 +844,17 @@
             this.removeButton.innerHTML = elemental.sanitizeDOM(elemental.colorPickerConfig.removeGradientPointIcon);
             this.removeButton.classList = `${parent.cssPrefix}gradient-button ${parent.cssPrefix}gradient-remove-button`;
 
+            //For modes we just need a simple container and display gradient.
             this.modeContainer = document.createElement("div");
             this.modeContainer.className = `${parent.cssPrefix}gradient-modes`;
+
+            //Create mode buttons
+            this.modes = {
+                none: document.createElement("div"),
+                linear: document.createElement("div"),
+                radial: document.createElement("div"),
+                conic: document.createElement("div"),
+            };
 
             //Create the display gradient but keep it hidden because it will only appear when a gradient mode is selected.
             this.displayGradient = document.createElement("div");
@@ -855,7 +872,9 @@
             this.buttonContainer.appendChild(this.modeContainer);
 
             this.gradientContainer.appendChild(this.buttonContainer);
-            container.appendChild(this.gradientContainer);
+
+            this.topSplit.appendChild(this.gradientContainer);
+            container.appendChild(this.topSplit);
 
             //functionality
             this.modes.none.onclick = () => this.mode = "none";
@@ -1068,10 +1087,15 @@
             if (this.mode != "none") { 
                 if (!this.displayGradient.parentElement) this.gradientContainer.appendChild(this.displayGradient);
                 if (!this.pointControlContainer.parentElement) this.buttonContainer.appendChild(this.pointControlContainer);
+
+                //Add/remove angle input depending on if angles would be relevant in this context.
+                if (this.modesWithAngles.includes(this.mode)) this.topSplit.appendChild(this.angleInput);
+                else if (this.angleInput.parentElement) this.angleInput.parentElement.removeChild(this.angleInput);
             }
             else {
                 if (this.displayGradient.parentElement) this.displayGradient.parentElement.removeChild(this.displayGradient);
                 if (this.pointControlContainer.parentElement) this.pointControlContainer.parentElement.removeChild(this.pointControlContainer);
+                if (this.angleInput.parentElement) this.angleInput.parentElement.removeChild(this.angleInput);
             }
 
             //Now we convert the color if need be;
@@ -1594,10 +1618,33 @@
             transform: translate(0%, -50%);
         }
 
+        <pr>gradient-top-split {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            margin: 4px;
+        }
+
+        <pr>gradient-angleSelector {
+            aspect-ratio: 1;
+
+            overflow: hidden;
+
+            width: auto;
+            height: calc(100% - 16px);
+
+            color: #000000;
+        }
+
+        <pr>gradient-angleSelector > svg {
+            aspect-ratio: 1;
+
+            width: auto;
+            height: 100%;
+        }
+
         <pr>gradient-container {
             display: grid;
             grid-template-rows: auto auto;
-            margin: 4px;
         }
 
         <pr>gradient-buttons {
@@ -1608,6 +1655,10 @@
         <pr>gradient-modes {
             display: flex;
             justify-content: center;
+        }
+
+        <pr>gradient-point-controls {
+            margin-right: 4px;
         }
 
         <pr>gradient-mode {
