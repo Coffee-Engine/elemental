@@ -61,30 +61,37 @@
             if (typeof Hex === "string") {
                 Hex = Hex.trim();
 
-                if (Hex.length > 7) {
-                    const splitHex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(Hex) || [0,0,0,255];
-                    return {
-                        r: parseInt(splitHex[1], 16),
-                        g: parseInt(splitHex[2], 16),
-                        b: parseInt(splitHex[3], 16),
-                        a: parseInt(splitHex[4], 16),
-                    };
-                } else if (Hex.length > 5) {
-                    const splitHex = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(Hex);
-                    return {
-                        r: parseInt(splitHex[1], 16),
-                        g: parseInt(splitHex[2], 16),
-                        b: parseInt(splitHex[3], 16),
-                        a: 255,
-                    };
-                } else {
-                    const splitHex = /^#?([a-f\d]{1})([a-f\d]{1})([a-f\d]{1})$/i.exec(Hex);
-                    return {
-                        r: parseInt(splitHex[1], 16),
-                        g: parseInt(splitHex[2], 16),
-                        b: parseInt(splitHex[3], 16),
-                        a: 255,
-                    };
+                //split into two.
+                const spl1 = Hex.match(/[a-f\d]/g);
+                const spl2 = Hex.match(/[a-f\d][a-f\d]/g);
+                let pref = spl2;
+
+                if (spl1.length >= 3 && spl1.length <= 4) pref = spl1.map((val) => parseInt(val, 16) * 17);
+                else if (spl2.length >= 3 && spl2.length <= 4) pref = spl2.map((val) => parseInt(val, 16));
+                else return {
+                    r: 255,
+                    g: 0,
+                    b: 255,
+                    a: 255,
+                }
+
+                if (pref.length == 3) return {
+                    r: pref[0],
+                    g: pref[1],
+                    b: pref[2],
+                    a: 255
+                }
+                else if (pref.length == 4) return {
+                    r: pref[0],
+                    g: pref[1],
+                    b: pref[2],
+                    a: pref[3]
+                }
+                else return {
+                    r: 255,
+                    g: 0,
+                    b: 255,
+                    a: 255,
                 }
             }
 
@@ -1105,6 +1112,14 @@
             this.container.appendChild(this.hexInput);
             this.container.appendChild(this.doneButton);
             container.appendChild(this.container);
+
+            this.hexInput.onchange = () => {            
+                if (elemental.colorPickerConfig.hexInputShowsGradient) {
+                    parent.value = this.hexInput.value;
+                    this.parent.updateColor(null, 0);
+                }
+                else parent.updateColor("hex", this.hexInput.value);
+            }
         }
 
         updateColor(target, value, parent) {
