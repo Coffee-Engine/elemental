@@ -932,7 +932,7 @@
             //Angle stuffs
             const angleDrag = (event) => {
                 event.preventDefault();
-                event.stopPropagation();
+                event.stopImmediatePropagation();
 
                 if (parent.color instanceof elemental.colorLib.gradient) {
                     const {left, width, top, height} = this.angleInput.getBoundingClientRect(); 
@@ -948,14 +948,19 @@
             }
 
             const angleDragEnd = () => {
-                document.body.removeEventListener("mousemove", angleDrag);
-                document.body.removeEventListener("mouseup", angleDragEnd);
+                document.body.removeEventListener("pointermove", angleDrag);
+                document.body.removeEventListener("pointerup", angleDragEnd);
             }
 
-            this.angleInput.onmousedown = (event) => {
+            //Kill any touch events on the angle input.
+            this.angleInput.ontouchstart = (event) => {
                 event.preventDefault();
                 event.stopImmediatePropagation();
-                event.stopPropagation();
+            }
+
+            this.angleInput.onpointerdown = (event) => {
+                event.preventDefault();
+                event.stopImmediatePropagation();
 
                 if (parent.color instanceof elemental.colorLib.gradient) {
                     const {left, width, top, height} = this.angleInput.getBoundingClientRect(); 
@@ -965,8 +970,8 @@
                     parent.color.angle = Math.PI - angle;
                     parent.updateColor(null, 0);
 
-                    document.body.addEventListener("mousemove", angleDrag);
-                    document.body.addEventListener("mouseup", angleDragEnd);
+                    document.body.addEventListener("pointermove", angleDrag);
+                    document.body.addEventListener("pointerup", angleDragEnd);
                 }
             }
 
@@ -1038,10 +1043,16 @@
                     //Check to see if it's awesome and cool, and totally the selected one.
                     if (this.parent.gradientIndex == i) element.className += ` ${this.parent.cssPrefix}gradient-point-selected`;
 
-                    //The behavior is rather simple, but we do need to stop propagation to prevent unwanted point creation.
-                    element.onmousedown = (event) => {
+                    //Kill any touch events on the created element
+                    element.ontouchstart = (event) => {
+                        event.preventDefault();
                         event.stopImmediatePropagation();
-                        event.stopPropagation();
+                    }
+
+                    //The behavior is rather simple, but we do need to stop propagation to prevent unwanted point creation.
+                    element.onpointerdown = (event) => {
+                        event.stopImmediatePropagation();
+                        event.preventDefault();
 
                         //Reset the class of the previously selected
                         this.colorGrabbers[this.parent.gradientIndex].className = `${this.parent.cssPrefix}gradient-point`;
@@ -1076,8 +1087,8 @@
                         }
 
                         const dragEnd = (event) => {
-                            document.body.removeEventListener("mousemove", dragFunction);
-                            document.body.removeEventListener("mouseup", dragEnd);
+                            document.body.removeEventListener("pointermove", dragFunction);
+                            document.body.removeEventListener("pointerup", dragEnd);
 
                             //If we dragged update the color and stuff;
                             if (dragged) {
@@ -1087,8 +1098,8 @@
                             }
                         }
 
-                        document.body.addEventListener("mousemove", dragFunction);
-                        document.body.addEventListener("mouseup", dragEnd);
+                        document.body.addEventListener("pointermove", dragFunction);
+                        document.body.addEventListener("pointerup", dragEnd);
                     }
 
                     element.style.setProperty("--color", color[0].hex);
@@ -1343,7 +1354,13 @@
             }
 
             setupSliderFunctionality(element, id) {
-                element.onmousedown = (downEvent) => {
+                //Kill any touch events on this element
+                element.ontouchstart = (event) => {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                }
+
+                element.onpointerdown = (downEvent) => {
                     //Make sure we don't accidentally select the background.
                     downEvent.stopPropagation();
                     downEvent.preventDefault();
@@ -1397,14 +1414,14 @@
                     }
 
                     const dropSlider = (event) => {
-                        document.removeEventListener("mousemove", moveSlider);
-                        document.removeEventListener("mouseup", dropSlider);
-                        document.removeEventListener("mouseleave", dropSlider);
+                        document.removeEventListener("pointermove", moveSlider);
+                        document.removeEventListener("pointerup", dropSlider);
+                        document.removeEventListener("pointerleave", dropSlider);
                     }
 
-                    document.addEventListener("mousemove", moveSlider);
-                    document.addEventListener("mouseup", dropSlider);
-                    document.addEventListener("mouseleave", dropSlider);
+                    document.addEventListener("pointermove", moveSlider);
+                    document.addEventListener("pointerup", dropSlider);
+                    document.addEventListener("pointerleave", dropSlider);
                 }
             }
 
@@ -1412,8 +1429,13 @@
                 //Create the container
                 this.container = document.createElement('div');
                 this.container.className = `${this.cssPrefix}container`;
-                this.container.style.setProperty("--x", `${x}px`);
-                this.container.style.setProperty("--y", `${y}px`);
+
+                //Set the position and scroll values
+                this.container.style.setProperty("--x", `${scrollX + x}px`);
+                this.container.style.setProperty("--y", `${scrollY + y}px`);
+
+                this.container.style.setProperty("--scrollX", `${scrollX}px`);
+                this.container.style.setProperty("--scrollY", `${scrollY}px`);
 
                 if (!this.color) this.color = new elemental.colorLib.color();
 
@@ -1537,6 +1559,24 @@
 
             z-index: 9999;
         }
+
+        /*
+        @media screen and (max-width: 540px) {
+            @media screen and (min-height: 100vw) {
+                <pr>container {
+                    position: absolute;
+
+                    top: calc(var(--scrollY) + 50%);
+                    left: var(--scrollX);
+
+                    width: 100%;
+                    height: auto;
+
+                    transform: translate(0%, -50%);
+                }
+            }
+        }
+        */
 
         <pr>slider-container {
             display: grid;
