@@ -823,7 +823,7 @@
             //The angle selector
             this.angleInput = document.createElement("div");
             this.angleInput.innerHTML = elemental.sanitizeDOM(elemental.colorPickerConfig.angleArrowIcon);
-            this.angleInput.classList = `${parent.cssPrefix}gradient-angleSelector`;
+            this.angleInput.classList = `${parent.cssPrefix}gradient-angle-selector`;
 
             //Then the actual gradient and gradient selection stuff.
             this.gradientContainer = document.createElement("div");
@@ -929,6 +929,47 @@
                 }
             }
 
+            //Angle stuffs
+            const angleDrag = (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                if (parent.color instanceof elemental.colorLib.gradient) {
+                    const {left, width, top, height} = this.angleInput.getBoundingClientRect(); 
+                    const angle = Math.atan2(event.clientX - (left + (width / 2)), event.clientY - (top + (height / 2)));
+                    
+                    //Update the angle and push the update event.
+                    parent.color.angle = Math.PI - angle;
+                    parent.updateColor(null, 0);
+                }
+                else {
+                    angleDragEnd();
+                }
+            }
+
+            const angleDragEnd = () => {
+                document.body.removeEventListener("mousemove", angleDrag);
+                document.body.removeEventListener("mouseup", angleDragEnd);
+            }
+
+            this.angleInput.onmousedown = (event) => {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                event.stopPropagation();
+
+                if (parent.color instanceof elemental.colorLib.gradient) {
+                    const {left, width, top, height} = this.angleInput.getBoundingClientRect(); 
+                    const angle = Math.atan2(event.clientX - (left + (width / 2)), event.clientY - (top + (height / 2)));
+                    
+                    //Update the angle and push the update event.
+                    parent.color.angle = Math.PI - angle;
+                    parent.updateColor(null, 0);
+
+                    document.body.addEventListener("mousemove", angleDrag);
+                    document.body.addEventListener("mouseup", angleDragEnd);
+                }
+            }
+
 
             //Behavior for the display gradient is this
             // click -> (Is on selector) -> no? -> create point
@@ -966,6 +1007,12 @@
             if (target == "hex" || target == "full") {
                 if (parent.color instanceof elemental.colorLib.color && this.mode != "none") this.mode = "none";
                 else if (parent.color instanceof elemental.colorLib.gradient && this.mode != parent.color.mode) this.mode = parent.color.mode;
+            }
+
+            //Set the gradient for the angle selector if need be.
+            if (this.parent.color instanceof elemental.colorLib.gradient && this.angleInput.parentElement) {
+                this.angleInput.style.setProperty("--gradient", parent.color.css);
+                this.angleInput.style.setProperty("--direction", `${parent.color.angle}rad`);
             }
         }
 
@@ -1127,7 +1174,7 @@
 
             //Clamp the gradient index to the colors available to the user.
             if (this.parent.color instanceof elemental.colorLib.gradient) {
-                this.parent.gradientIndex = Math.ceil(Math.max(0, this.parent.gradientIndex), this.parent.color.colors.length)
+                this.parent.gradientIndex = Math.ceil(Math.max(0, this.parent.gradientIndex), this.parent.color.colors.length);
             }
         }
 
@@ -1624,22 +1671,40 @@
             margin: 4px;
         }
 
-        <pr>gradient-angleSelector {
+        <pr>gradient-angle-selector {
             aspect-ratio: 1;
 
             overflow: hidden;
 
             width: auto;
-            height: calc(100% - 16px);
+            height: 40px;
 
             color: #000000;
+            background: var(--gradient), linear-gradient(to bottom, #00000033 50%, transparent 50%);
+            border: 4px #dfdfdf outset;
+
+            border-radius: 50%;
         }
 
-        <pr>gradient-angleSelector > svg {
+        <pr>gradient-angle-selector > svg {
             aspect-ratio: 1;
 
             width: auto;
             height: 100%;
+
+            transform: rotate(var(--direction));
+
+            /* Dumb little outline thing. */
+            filter: 
+                drop-shadow(0px 0.5px 0px #ffffff) 
+                drop-shadow(0px -0.5px 0px #ffffff) 
+                drop-shadow(0.5px 0px 0px #ffffff) 
+                drop-shadow(-0.5px 0px 0px #ffffff)
+
+                drop-shadow(0.5px 0.5px 0px #ffffff) 
+                drop-shadow(-0.5px 0.5px 0px #ffffff) 
+                drop-shadow(0.5px -0.5px 0px #ffffff) 
+                drop-shadow(-0.5px -0.5px 0px #ffffff);
         }
 
         <pr>gradient-container {
@@ -1649,7 +1714,7 @@
 
         <pr>gradient-buttons {
             display: grid;
-            grid-template-columns: 1fr auto;
+            grid-template-columns: 1fr 48px;
         }
 
         <pr>gradient-modes {
@@ -1664,8 +1729,8 @@
         <pr>gradient-mode {
             --gradientColor: #5f5f5f;
 
-            width: 16px;
-            height: auto;
+            width: auto;
+            height: 16px;
 
             aspect-ratio: 1;
 
@@ -1785,6 +1850,7 @@
 
         <pr>palette-container {
             display: flex;
+            flex-wrap: wrap;
 
             margin: 4px;
 
